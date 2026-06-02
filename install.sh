@@ -63,7 +63,7 @@ if command -v wakatime >/dev/null 2>&1; then
                 --entity-type app \
                 --project "$(basename "$(pwd)")" \
                 --language Bash \
-                --category coding \
+                --category Coding \
                 --write \
                 >/dev/null 2>&1
         ) </dev/null >/dev/null 2>&1 &
