@@ -5,6 +5,10 @@
 
 set -e
 
+# Define PREFIX and HOME
+HOME="${HOME:-$HOME}"
+PREFIX="${PREFIX:-/usr}"
+
 # Function to check if a command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
@@ -13,10 +17,14 @@ command_exists() {
 echo "Starting WakaTime installation..."
 
 # Detect environment and install dependencies
-if command_exists pkg; then
+IS_TERMUX=false
+if [ -d "/data/data/com.termux/files/usr" ] || command_exists pkg; then
+    IS_TERMUX=true
     echo "Detected Termux environment."
+    # Ensure PREFIX is set correctly for Termux
+    [ -z "$PREFIX" ] || [ "$PREFIX" = "/usr" ] && PREFIX="/data/data/com.termux/files/usr"
     pkg update && pkg upgrade -y
-    pkg install -y python python-pip nano
+    pkg install -y python nano
 elif command_exists apt-get; then
     echo "Detected Debian/Ubuntu-based environment."
     SUDO=""
@@ -33,15 +41,22 @@ fi
 # Install wakatime CLI
 echo "Installing wakatime CLI..."
 if command_exists pip3; then
-    pip3 install --user wakatime
+    PIP_BIN="pip3"
 elif command_exists pip; then
-    pip install --user wakatime
+    PIP_BIN="pip"
 else
     echo "Error: pip not found. Please install python-pip manually."
     exit 1
 fi
 
-# Ensure ~/.local/bin is in PATH for the current session and future ones
+# In Termux, global install is safe (it stays in $PREFIX). In Linux, --user is safer.
+if [ "$IS_TERMUX" = true ]; then
+    $PIP_BIN install wakatime
+else
+    $PIP_BIN install --user wakatime
+fi
+
+# Ensure ~/.local/bin is in PATH (primarily for non-Termux or if --user was used)
 BASHRC="$HOME/.bashrc"
 LOCAL_BIN="$HOME/.local/bin"
 export PATH="$LOCAL_BIN:$PATH"
