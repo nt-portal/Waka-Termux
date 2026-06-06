@@ -8,7 +8,7 @@ WAKA_CFG="$HOME/.wakatime.cfg"
 echo "Starting WakaTime installation..."
 
 pkg update -y
-pkg install -y python nano
+pkg install -y python
 
 pip install wakatime
 
@@ -83,7 +83,7 @@ ignore =
     TAG_EDITMSG$' >> "$WAKA_CFG"
 fi
 
-nano "$WAKA_CFG"
+source ~/.bashrc
 
 echo "----------------------------------------------------"
 echo "Instalasi selesai!"
