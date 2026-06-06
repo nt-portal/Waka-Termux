@@ -7,8 +7,8 @@ WAKA_CFG="$HOME/.wakatime.cfg"
 
 echo "Starting WakaTime installation..."
 
-pkg update && pkg upgrade -y  
-pkg install python -y 
+pkg update -y && pkg upgrade -y  
+pkg install -y python python-pip
 
 pip install wakatime
 
