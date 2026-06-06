@@ -9,8 +9,7 @@ echo "Starting WakaTime installation..."
 
 pkg update -y
 pkg upgrade -y 
-pkg install -y python-pip 
-pkg install -y python 
+pkg install python -y
 
 pip install wakatime
 
