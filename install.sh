@@ -13,7 +13,6 @@ pkg install python -y
 pip install wakatime
 
 touch "$BASHRC"
-touch "$WAKA_CFG"
 
 if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$BASHRC"; then
     echo '' >> "$BASHRC"
@@ -22,6 +21,7 @@ fi
 
 if ! grep -q "WakaTime tracking" "$BASHRC"; then
     echo '
+# WakaTime tracking
 if command -v wakatime >/dev/null 2>&1; then
     set +m
 
@@ -74,8 +74,9 @@ if command -v wakatime >/dev/null 2>&1; then
 fi' >> "$BASHRC"
 fi
 
-if [ ! -f "$WAKA_CFG" ]; then
-    echo '[settings]
+if ! grep -q "api_key" "$WAKA_CFG" 2>/dev/null; then
+    cat > "$WAKA_CFG" << 'EOF'
+[settings]
 api_key = waka_api
 debug = false
 hidefilenames = true
@@ -83,7 +84,8 @@ ignore =
     COMMIT_EDITMSG$
     PULLREQ_EDITMSG$
     MERGE_MSG$
-    TAG_EDITMSG$' >> "$WAKA_CFG"
+    TAG_EDITMSG$
+EOF
 fi
 
 source ~/.bashrc
