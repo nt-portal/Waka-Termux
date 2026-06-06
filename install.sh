@@ -7,10 +7,13 @@ WAKA_CFG="$HOME/.wakatime.cfg"
 
 echo "Starting WakaTime installation..."
 
-pkg update -y
-pkg install -y python
+pkg update && pkg upgrade -y  
+pkg install python -y 
 
 pip install wakatime
+
+touch "$BASHRC"
+touch "$WAKA_CFG"
 
 if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$BASHRC"; then
     echo '' >> "$BASHRC"
