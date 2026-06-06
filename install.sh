@@ -8,12 +8,13 @@ WAKA_CFG="$HOME/.wakatime.cfg"
 echo "Starting WakaTime installation..."
 
 pkg update -y
-pkg install -y python
+pkg install -y python nano
 
 pip install wakatime
 
 if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$BASHRC"; then
-    echo '\n# Add ~/.local/bin to PATH\nexport PATH="$HOME/.local/bin:$PATH"' >> "$BASHRC"
+    echo '' >> "$BASHRC"
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASHRC"
 fi
 
 if ! grep -q "WakaTime tracking" "$BASHRC"; then
@@ -81,6 +82,8 @@ ignore =
     MERGE_MSG$
     TAG_EDITMSG$' >> "$WAKA_CFG"
 fi
+
+nano "$WAKA_CFG"
 
 echo "----------------------------------------------------"
 echo "Instalasi selesai!"
