@@ -15,32 +15,27 @@ pip install wakatime
 touch "$BASHRC"
 
 if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$BASHRC"; then
-    echo '' >> "$BASHRC"
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASHRC"
+  echo '' >>"$BASHRC"
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$BASHRC"
 fi
 
 if ! grep -q "WakaTime tracking" "$BASHRC"; then
-    echo '
-# WakaTime tracking
+  cat >>"$BASHRC" <<'EOF'
+
 if command -v wakatime >/dev/null 2>&1; then
     set +m
 
-    export WAKATIME_LAST_DIR="$PWD"
-
-    cd() {
-        builtin cd "$@" || return
-        export WAKATIME_LAST_DIR="$PWD"
-    }
-
     __wakatime_track() {
+        local _path="$PWD"
         (
             wakatime \
-                --plugin "termux-shell/1.5" \
-                --entity "$WAKATIME_LAST_DIR" \
+                --plugin "termux-bash/1.5" \
+                --entity "$_path" \
                 --entity-type app \
-                --project "$(basename "$WAKATIME_LAST_DIR")" \
+                --project "$(basename "$_path")" \
                 --language Bash \
                 --category coding \
+                --os Linux \
                 --write \
                 >/dev/null 2>&1
         ) </dev/null >/dev/null 2>&1 &
@@ -49,16 +44,17 @@ if command -v wakatime >/dev/null 2>&1; then
 
     __wakatime_timer() {
         while true; do
+            local _path="$PWD"
             wakatime \
-                --plugin "termux-shell/1.5" \
-                --entity "$WAKATIME_LAST_DIR" \
+                --plugin "termux-bash/1.5" \
+                --entity "$_path" \
                 --entity-type app \
-                --project "$(basename "$WAKATIME_LAST_DIR")" \
+                --project "$(basename "$_path")" \
                 --language Bash \
                 --category coding \
+                --os Linux \
                 --write \
                 >/dev/null 2>&1
-
             sleep 120
         done
     }
@@ -70,12 +66,12 @@ if command -v wakatime >/dev/null 2>&1; then
         __wakatime_timer </dev/null >/dev/null 2>&1 &
         disown 2>/dev/null
     fi
-
-fi' >> "$BASHRC"
+fi
+EOF
 fi
 
 if ! grep -q "api_key" "$WAKA_CFG" 2>/dev/null; then
-    cat > "$WAKA_CFG" << 'EOF'
+  cat >"$WAKA_CFG" <<'EOF'
 [settings]
 api_key = waka_api
 debug = false
