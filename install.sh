@@ -32,10 +32,8 @@ if command -v wakatime >/dev/null 2>&1; then
                 --plugin "termux-bash/1.5" \
                 --entity "$_path" \
                 --entity-type app \
-                --project "$(basename "$_path")" \
                 --language Bash \
                 --category coding \
-                --os Linux \
                 --write \
                 >/dev/null 2>&1
         ) </dev/null >/dev/null 2>&1 &
@@ -49,10 +47,8 @@ if command -v wakatime >/dev/null 2>&1; then
                 --plugin "termux-bash/1.5" \
                 --entity "$_path" \
                 --entity-type app \
-                --project "$(basename "$_path")" \
                 --language Bash \
                 --category coding \
-                --os Linux \
                 --write \
                 >/dev/null 2>&1
             sleep 120
