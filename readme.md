@@ -36,4 +36,4 @@ It is recommended to use the version of Termux from F-Droid or GitHub, as the Pl
 
 ---
 
-<p align="center">Made with ❤️ by TDev</p>
+[Donate](https://saweria.co/ntdonate) for my needs.
