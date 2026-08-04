@@ -40,7 +40,8 @@ if command -v wakatime >/dev/null 2>&1; then
     }
 
     # Returns the language label for WakaTime.
-    # Uses "C" for $HOME (generic terminal), "Bash" for project folders.
+    # Uses "C" only for $HOME (generic terminal activity).
+    # For project folders, detects language from file extensions found inside.
     __wakatime_get_lang() {
         local _dir="${1:-$PWD}"
         if [ "$_dir" = "$HOME" ]; then
@@ -48,6 +49,93 @@ if command -v wakatime >/dev/null 2>&1; then
         else
             echo "Bash"
         fi
+    }
+
+    # Detects language based on file extension.
+    # Returns a WakaTime-compatible language name.
+    __wakatime_detect_lang() {
+        local _file="$1"
+        case "${_file##*.}" in
+            py)         echo "Python" ;;
+            js)         echo "JavaScript" ;;
+            ts)         echo "TypeScript" ;;
+            jsx)        echo "JSX" ;;
+            tsx)        echo "TSX" ;;
+            sh|bash)    echo "Bash" ;;
+            c)          echo "C" ;;
+            cpp|cc|cxx) echo "C++" ;;
+            h|hpp)      echo "C" ;;
+            java)       echo "Java" ;;
+            kt)         echo "Kotlin" ;;
+            go)         echo "Go" ;;
+            rs)         echo "Rust" ;;
+            rb)         echo "Ruby" ;;
+            php)        echo "PHP" ;;
+            html|htm)   echo "HTML" ;;
+            css)        echo "CSS" ;;
+            json)       echo "JSON" ;;
+            xml)        echo "XML" ;;
+            yml|yaml)   echo "YAML" ;;
+            md)         echo "Markdown" ;;
+            sql)        echo "SQL" ;;
+            dart)       echo "Dart" ;;
+            swift)      echo "Swift" ;;
+            lua)        echo "Lua" ;;
+            r|R)        echo "R" ;;
+            toml)       echo "TOML" ;;
+            ini|cfg)    echo "INI" ;;
+            txt)        echo "Text" ;;
+            *)          echo "Unknown" ;;
+        esac
+    }
+
+    # Scans files in a directory and sends individual heartbeats
+    # for each file to WakaTime. Uses shell globs (no external commands).
+    # Files appear in WakaTime's heard/Status under the project.
+    # Skips hidden files/dirs, node_modules, .git, and binary files.
+    __wakatime_scan_files() {
+        local _dir="$1"
+        local _project="$2"
+        local _count=0
+        local _scan_file="$HOME/.wakatime/.scan_${_project}"
+
+        # Skip if scanned recently (within 120 seconds)
+        if [ -f "$_scan_file" ]; then
+            local _last_scan
+            _last_scan=$(cat "$_scan_file" 2>/dev/null)
+            local _now
+            _now=$(date +%s)
+            [ $((_now - _last_scan)) -lt 120 ] && return
+        fi
+
+        # Scan files using shell globs — no external bash commands
+        for _entry in "$_dir"/*; do
+            [ -f "$_entry" ] || continue
+
+            local _basename="${_entry##*/}"
+            # Skip hidden files
+            case "$_basename" in .*) continue ;; esac
+            # Skip common non-code files
+            case "$_basename" in *.tar.gz|*.zip|*.7z|*.rar) continue ;; esac
+
+            local _lang
+            _lang=$(__wakatime_detect_lang "$_basename")
+
+            wakatime \
+                --plugin "termux-bash/1.5" \
+                --entity "$_entry" \
+                --entity-type file \
+                --project "$_project" \
+                --language "$_lang" \
+                --category coding \
+                --write \
+                >/dev/null 2>&1
+
+            _count=$((_count + 1))
+        done
+
+        # Record scan timestamp
+        date +%s >"$_scan_file" 2>/dev/null
     }
 
     # Sends a heartbeat to WakaTime on every prompt.
@@ -75,6 +163,7 @@ if command -v wakatime >/dev/null 2>&1; then
     # Creates a compressed backup of the current project once per day.
     # Keeps only the 5 most recent backups per project.
     # Skips if: in Home Termux, inside the backup directory itself.
+    # Uses find + shell builtins instead of ls|tail|xargs pipeline.
     __wakatime_backup() {
         local _path="$1"
         local _project="$2"
@@ -83,7 +172,8 @@ if command -v wakatime >/dev/null 2>&1; then
         [ "$_project" = "Home Termux" ] && return
         [[ "$_path" == "$_backup_dir"* ]] && return
         local _last_backup="$_backup_dir/.$_project.last_backup"
-        local _now=$(date +%s)
+        local _now
+        _now=$(date +%s)
         local _last=0
         [ -f "$_last_backup" ] && _last=$(cat "$_last_backup")
         if [ $((_now - _last)) -gt 86400 ]; then
@@ -96,8 +186,16 @@ if command -v wakatime >/dev/null 2>&1; then
                     --exclude="*.tar.gz" \
                     >/dev/null 2>&1
                 echo "$_now" >"$_last_backup"
-                ls -t "$_backup_dir/${_project}_"*.tar.gz 2>/dev/null \
-                    | tail -n +6 | xargs rm -f 2>/dev/null
+                # Cleanup old backups: keep only 5 newest, remove rest
+                # Uses find + sort instead of ls|tail|xargs
+                local _i=0
+                for _bf in $(find "$_backup_dir" -maxdepth 1 \
+                    -name "${_project}_*.tar.gz" -type f \
+                    -printf '%T@ %p\n' 2>/dev/null \
+                    | sort -rn | cut -d' ' -f2-); do
+                    _i=$((_i + 1))
+                    [ "$_i" -gt 5 ] && rm -f "$_bf"
+                done
             ) &
             disown 2>/dev/null
         fi
@@ -106,6 +204,7 @@ if command -v wakatime >/dev/null 2>&1; then
     # Background timer that sends a WakaTime heartbeat every 60 seconds.
     # Reads the current directory from the temp file written by __wakatime_track,
     # since the timer runs in a subshell and cannot see the parent's $PWD directly.
+    # Also scans files in the directory and sends per-file heartbeats.
     __wakatime_timer() {
         local _tmpfile="$HOME/.wakatime/.current_dir"
         echo "$PWD" >"$_tmpfile"
@@ -123,6 +222,8 @@ if command -v wakatime >/dev/null 2>&1; then
                 --category coding \
                 --write \
                 >/dev/null 2>&1
+            # Scan files in project directories (not $HOME)
+            [ "$_project" != "Home Termux" ] && __wakatime_scan_files "$_path" "$_project"
             [ "$_project" != "Home Termux" ] && __wakatime_backup "$_path" "$_project"
             sleep 60
         done
