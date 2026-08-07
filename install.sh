@@ -8,7 +8,7 @@ WAKA_CFG="$HOME/.wakatime.cfg"
 # ─── Install dependencies ────────────────────────────────────
 pkg update -y
 pkg install python -y
-pip install wakatime --break-system-packages --quiet
+pip install wakatime
 
 touch "$BASHRC"
 mkdir -p "$HOME/.wakatime"
