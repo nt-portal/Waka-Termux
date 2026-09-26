@@ -1,39 +1,41 @@
-# WakaTime for Termux
+# WakaTime untuk Termux
 
-WakaTime for Termux allows you to automatically track your coding activity directly from your shell. Monitor your productivity and keep track of how much time you spend on different projects.
+WakaTime untuk Termux memungkinkan Anda melacak aktivitas coding secara otomatis langsung dari shell Anda. Pantau produktivitas Anda dan lacak berapa banyak waktu yang Anda habiskan untuk berbagai proyek yang berbeda.
 
 ---
 
-## Prerequisites
+## Prasyarat
 
-It is recommended to use the version of Termux from F-Droid or GitHub, as the Play Store version is outdated.
+Direkomendasikan untuk menggunakan versi Termux dari F-Droid atau GitHub, karena versi Play Store sudah usang.
 
 - [F-Droid](https://f-droid.org/packages/com.termux)
 - [GitHub Releases](https://github.com/termux/termux-app/releases)
 
 ---
 
-## Installation
+## Instalasi
 
-1. **Sign Up**: Register for a WakaTime account at [wakatime.com](https://wakatime.com).
-2. **Run the Installer**:
+1. **Daftar**: Daftar akun WakaTime di [wakatime.com](https://wakatime.com).
+2. **Jalankan Installer**:
 
    ```bash
    curl -sL https://github.com/nt-portal/Waka-Termux/raw/main/install.sh | bash
    ```
 
-3. **Configure**: The installer will open `~/.wakatime.cfg`. Paste your API key there. You can find your API key in your [WakaTime account settings](https://wakatime.com/settings/account).
+3. **Konfigurasi**: Installer akan membuka `~/.wakatime.cfg`. Tempel API key Anda di sana. Anda dapat menemukan API key Anda di [pengaturan akun WakaTime](https://wakatime.com/settings/account).
 
-4. **Restart Shell**: Run `source ~/.bashrc` or restart your terminal to start tracking.
-
----
-
-## Features
-
-- Automatic tracking of shell activity.
-- Project detection based on the current directory.
-- Background execution to avoid terminal lag.
+4. **Muat Ulang Shell**: Jalankan `source ~/.bashrc` atau mulai ulang terminal Anda untuk mulai melacak.
 
 ---
 
-[Donate](https://saweria.co/ntdonate) for my needs.
+## Fitur
+
+- Pelacakan otomatis aktivitas shell.
+- Deteksi proyek berdasarkan direktori saat ini.
+- Mendukung 450+ bahasa pemrograman dan 870+ ekstensi file.
+- Backup harian otomatis untuk folder proyek (`~/.wakatime/backups`).
+- Eksekusi di latar belakang untuk menghindari terminal lag.
+
+---
+
+[Donasi](https://saweria.co/ntdonate) untuk kebutuhan saya.
